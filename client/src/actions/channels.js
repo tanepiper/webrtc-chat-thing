@@ -1,5 +1,3 @@
-import WebRTCDataChannel from '../rtc/WebRTCDataChannel';
-
 import {
   GET_CHANNELS,
   GET_CHANNEL,

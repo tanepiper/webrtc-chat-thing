@@ -8491,7 +8491,7 @@
 	
 	var _Root2 = _interopRequireDefault(_Root);
 	
-	var _configureStore = __webpack_require__(/*! ./store/configureStore */ 806);
+	var _configureStore = __webpack_require__(/*! ./store/configureStore */ 808);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -36594,7 +36594,7 @@
 	
 	var _Home2 = _interopRequireDefault(_Home);
 	
-	var _ChatRoom = __webpack_require__(/*! ../containers/ChatRoom */ 805);
+	var _ChatRoom = __webpack_require__(/*! ../containers/ChatRoom */ 803);
 	
 	var _ChatRoom2 = _interopRequireDefault(_ChatRoom);
 	
@@ -36724,6 +36724,10 @@
 	
 	var _Channels2 = _interopRequireDefault(_Channels);
 	
+	var _Username = __webpack_require__(/*! ./Username */ 801);
+	
+	var _Username2 = _interopRequireDefault(_Username);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var Home = function (_Component) {
@@ -36744,6 +36748,11 @@
 	          'h1',
 	          null,
 	          'Chat App'
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'row' },
+	          _react2.default.createElement(_Username2.default, null)
 	        ),
 	        _react2.default.createElement(
 	          'div',
@@ -54124,7 +54133,7 @@
 	
 	var actionCreators = _interopRequireWildcard(_channels);
 	
-	var _List = __webpack_require__(/*! ../components/Channels/List */ 804);
+	var _List = __webpack_require__(/*! ../components/Channels/List */ 800);
 	
 	var _List2 = _interopRequireDefault(_List);
 	
@@ -54176,6 +54185,7 @@
 	
 	var mapStateToProps = function mapStateToProps(state) {
 	  return {
+	    username: state.auth.username,
 	    channels: state.channels.channels,
 	    error: state.channels.error
 	  };
@@ -54207,13 +54217,7 @@
 	exports.getChannels = getChannels;
 	exports.createChannel = createChannel;
 	
-	var _WebRTCDataChannel = __webpack_require__(/*! ../rtc/WebRTCDataChannel */ 799);
-	
-	var _WebRTCDataChannel2 = _interopRequireDefault(_WebRTCDataChannel);
-	
-	var _constants = __webpack_require__(/*! ../constants */ 803);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	var _constants = __webpack_require__(/*! ../constants */ 799);
 	
 	function reduceGetChannels(payload) {
 	  return {
@@ -54255,9 +54259,28 @@
 
 /***/ },
 /* 799 */
-/*!*********************************************!*\
-  !*** ./client/src/rtc/WebRTCDataChannel.js ***!
-  \*********************************************/
+/*!***************************************!*\
+  !*** ./client/src/constants/index.js ***!
+  \***************************************/
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var GET_CHANNELS = exports.GET_CHANNELS = 'GET_CHANNELS';
+	var CREATE_CHANNEL = exports.CREATE_CHANNEL = 'CREATE_CHANNEL';
+	var GET_CHANNEL = exports.GET_CHANNEL = 'GET_CHANNEL';
+	
+	var SET_USERNAME = exports.SET_USERNAME = 'SET_USERNAME';
+	var GET_USERNAME = exports.GET_USERNAME = 'GET_USERNAME';
+
+/***/ },
+/* 800 */
+/*!************************************************!*\
+  !*** ./client/src/components/Channels/List.js ***!
+  \************************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -54266,9 +54289,9 @@
 	  value: true
 	});
 	
-	var _stringify = __webpack_require__(/*! babel-runtime/core-js/json/stringify */ 800);
+	var _getPrototypeOf = __webpack_require__(/*! babel-runtime/core-js/object/get-prototype-of */ 507);
 	
-	var _stringify2 = _interopRequireDefault(_stringify);
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
 	
 	var _classCallCheck2 = __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ 519);
 	
@@ -54278,129 +54301,426 @@
 	
 	var _createClass3 = _interopRequireDefault(_createClass2);
 	
-	var _firebase = __webpack_require__(/*! firebase */ 802);
+	var _possibleConstructorReturn2 = __webpack_require__(/*! babel-runtime/helpers/possibleConstructorReturn */ 521);
 	
-	var _firebase2 = _interopRequireDefault(_firebase);
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+	
+	var _inherits2 = __webpack_require__(/*! babel-runtime/helpers/inherits */ 546);
+	
+	var _inherits3 = _interopRequireDefault(_inherits2);
+	
+	var _react = __webpack_require__(/*! react */ 287);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactRouter = __webpack_require__(/*! react-router */ 444);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var peerConnection = typeof window['webkitRTCPeerConnection'] !== 'undefined' ? window['webkitRTCPeerConnection'] : window['RTCPeerConnection'];
+	var ChannelList = function (_Component) {
+	  (0, _inherits3.default)(ChannelList, _Component);
 	
-	var WebRTCDataChannel = function () {
-	  //milliseconds
-	
-	  function WebRTCDataChannel() {
-	    var identifier = arguments.length <= 0 || arguments[0] === undefined ? 'default-channel' : arguments[0];
-	    (0, _classCallCheck3.default)(this, WebRTCDataChannel);
-	    this.rtcPeerConnection = null;
-	    this.dataChannel = null;
-	
-	    this.configuration = {
-	      identifier: identifier,
-	      iceServers: [{
-	        'url': 'stun:stun.l.google.com:19302'
-	      }]
-	    };
-	
-	    this.socket = new _firebase2.default('https://blazing-torch-9743.firebaseio.com/' + this.SIGNAL_CHANNEL);
-	    console.log(peerConnection);
-	    this.rtcPeerConnection = new peerConnection(this.configuration, null);
-	    this.dataChannel = this.rtcPeerConnection.createDataChannel(identifier, this.dataChannelOptions);
+	  function ChannelList(props) {
+	    (0, _classCallCheck3.default)(this, ChannelList);
+	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(ChannelList).call(this, props));
 	  }
 	
-	  (0, _createClass3.default)(WebRTCDataChannel, [{
-	    key: 'startSignalling',
-	    value: function startSignalling() {
-	      var _this = this;
+	  (0, _createClass3.default)(ChannelList, [{
+	    key: 'render',
+	    value: function render() {
+	      var channels = this.props.channels;
 	
-	      console.log('Signalling', this.configuration.identifier);
-	      this.dataChannel.onopen = this.dataChannelStateChanged.bind(this);
-	      this.rtcPeerConnection.ondatachannel = this.receiveDataChannel.bind(this);
 	
-	      // send any ice candidates to the other peer
-	      this.rtcPeerConnection.onicecandidate = function (evt) {
-	        if (evt.candidate) {
-	          console.log('Event Candidate', evt.candidate);
-	
-	          var req = {
-	            candidate: evt.candidate
-	          };
-	          _this.socket.set(req);
-	        }
-	      };
-	
-	      // let the 'negotiationneeded' event trigger offer generation
-	      this.rtcPeerConnection.onnegotiationneeded = function () {
-	        console.log("on negotiation called");
-	        _this.rtcPeerConnection.createOffer(_this.sendLocalDesc.bind(_this), console.error);
-	      };
-	    }
-	  }, {
-	    key: 'dataChannelStateChanged',
-	    value: function dataChannelStateChanged() {
-	      if (this.dataChannel.readyState === 'open') {
-	        console.log("Data Channel open");
-	        this.dataChannel.onmessage = this.receiveDataChannelMessage.bind(this);
-	      }
-	    }
-	  }, {
-	    key: 'receiveDataChannel',
-	    value: function receiveDataChannel(event) {
-	      console.log("Receiving a data channel");
-	      this.dataChannel = event.channel;
-	      this.dataChannel.onmessage = this.receiveDataChannelMessage.bind(this);
-	    }
-	  }, {
-	    key: 'receiveDataChannelMessage',
-	    value: function receiveDataChannelMessage(event) {
-	      console.log("From DataChannel: " + event.data);
-	    }
-	  }, {
-	    key: 'sendLocalDesc',
-	    value: function sendLocalDesc(desc) {
-	      var _this2 = this;
-	
-	      this.rtcPeerConnection.setLocalDescription(desc, function () {
-	        console.log("sending local description");
-	        console.log('signal', { "type": "SDP", "message": (0, _stringify2.default)({ 'sdp': _this2.rtcPeerConnection.localDescription }), "room": _this2.SIGNAL_ROOM });
-	      }, console.error);
+	      return _react2.default.createElement(
+	        'ul',
+	        null,
+	        channels.map(function (channel, index) {
+	          return _react2.default.createElement(
+	            'li',
+	            { key: channel.id },
+	            _react2.default.createElement(
+	              _reactRouter.Link,
+	              { to: '/channel/' + channel.id },
+	              channel.name
+	            )
+	          );
+	        })
+	      );
 	    }
 	  }]);
-	  return WebRTCDataChannel;
-	}();
+	  return ChannelList;
+	}(_react.Component);
 	
-	WebRTCDataChannel.SIGNAL_CHANNEL = 'signalling';
-	WebRTCDataChannel.iceServers = [{
-	  'url': 'stun:stun.l.google.com:19302'
-	}];
-	WebRTCDataChannel.dataChannelOptions = {
-	  ordered: false, //no guaranteed delivery, unreliable but faster
-	  maxRetransmitTime: 1000 };
-	exports.default = WebRTCDataChannel;
-
-/***/ },
-/* 800 */
-/*!***************************************************!*\
-  !*** ./~/babel-runtime/core-js/json/stringify.js ***!
-  \***************************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = { "default": __webpack_require__(/*! core-js/library/fn/json/stringify */ 801), __esModule: true };
+	ChannelList.propTypes = {
+	  channels: _react.PropTypes.array.isRequired
+	};
+	exports.default = ChannelList;
 
 /***/ },
 /* 801 */
-/*!************************************************!*\
-  !*** ./~/core-js/library/fn/json/stringify.js ***!
-  \************************************************/
+/*!*******************************************!*\
+  !*** ./client/src/containers/Username.js ***!
+  \*******************************************/
 /***/ function(module, exports, __webpack_require__) {
 
-	var core = __webpack_require__(/*! ../../modules/$.core */ 515);
-	module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
-	  return (core.JSON && core.JSON.stringify || JSON.stringify).apply(JSON, arguments);
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.Username = undefined;
+	
+	var _getPrototypeOf = __webpack_require__(/*! babel-runtime/core-js/object/get-prototype-of */ 507);
+	
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+	
+	var _classCallCheck2 = __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ 519);
+	
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+	
+	var _createClass2 = __webpack_require__(/*! babel-runtime/helpers/createClass */ 520);
+	
+	var _createClass3 = _interopRequireDefault(_createClass2);
+	
+	var _possibleConstructorReturn2 = __webpack_require__(/*! babel-runtime/helpers/possibleConstructorReturn */ 521);
+	
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+	
+	var _inherits2 = __webpack_require__(/*! babel-runtime/helpers/inherits */ 546);
+	
+	var _inherits3 = _interopRequireDefault(_inherits2);
+	
+	var _react = __webpack_require__(/*! react */ 287);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ 576);
+	
+	var _reactRedux = __webpack_require__(/*! react-redux */ 553);
+	
+	var _redux = __webpack_require__(/*! redux */ 559);
+	
+	var _auth = __webpack_require__(/*! ../actions/auth */ 802);
+	
+	var actionCreators = _interopRequireWildcard(_auth);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var Username = exports.Username = function (_Component) {
+	  (0, _inherits3.default)(Username, _Component);
+	
+	  function Username(props) {
+	    (0, _classCallCheck3.default)(this, Username);
+	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(Username).call(this, props));
+	  }
+	
+	  (0, _createClass3.default)(Username, [{
+	    key: 'validationState',
+	    value: function validationState() {
+	      var length = this.props.username.length;
+	      if (length > 10) return 'success';else if (length > 5) return 'warning';else if (length > 0) return 'error';
+	    }
+	  }, {
+	    key: 'handleChange',
+	    value: function handleChange() {
+	      this.props.actions.setUsername(this.refs.input.getValue());
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(_reactBootstrap.Input, {
+	          type: 'text',
+	          value: this.props.username,
+	          placeholder: 'Zer0kool',
+	          label: 'Please enter your username',
+	          help: 'Select a cool username',
+	          bsStyle: this.validationState(),
+	          hasFeedback: true,
+	          ref: 'input',
+	          groupClassName: 'group-class',
+	          labelClassName: 'label-class',
+	          onChange: this.handleChange.bind(this) })
+	      );
+	    }
+	  }]);
+	  return Username;
+	}(_react.Component);
+	
+	var mapStateToProps = function mapStateToProps(state) {
+	  return {
+	    username: state.auth.username
+	  };
 	};
+	
+	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+	  return {
+	    actions: (0, _redux.bindActionCreators)(actionCreators, dispatch),
+	    dispatch: dispatch
+	  };
+	};
+	
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(Username);
 
 /***/ },
 /* 802 */
+/*!************************************!*\
+  !*** ./client/src/actions/auth.js ***!
+  \************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.reduceSetUsername = reduceSetUsername;
+	exports.reduceGetUsername = reduceGetUsername;
+	exports.setUsername = setUsername;
+	exports.getUsername = getUsername;
+	
+	var _constants = __webpack_require__(/*! ../constants */ 799);
+	
+	function reduceSetUsername(payload) {
+	  return {
+	    type: _constants.SET_USERNAME,
+	    payload: payload
+	  };
+	}
+	
+	function reduceGetUsername() {
+	  return {
+	    type: _constants.GET_USERNAME
+	  };
+	}
+	
+	function setUsername(username) {
+	  return function (dispatch, state) {
+	    dispatch(reduceSetUsername(username));
+	  };
+	}
+	
+	function getUsername() {
+	  return function (dispatch, state) {
+	    dispatch(reduceGetUsername());
+	  };
+	}
+
+/***/ },
+/* 803 */
+/*!*******************************************!*\
+  !*** ./client/src/containers/ChatRoom.js ***!
+  \*******************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.ChatRoom = undefined;
+	
+	var _getPrototypeOf = __webpack_require__(/*! babel-runtime/core-js/object/get-prototype-of */ 507);
+	
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+	
+	var _classCallCheck2 = __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ 519);
+	
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+	
+	var _createClass2 = __webpack_require__(/*! babel-runtime/helpers/createClass */ 520);
+	
+	var _createClass3 = _interopRequireDefault(_createClass2);
+	
+	var _possibleConstructorReturn2 = __webpack_require__(/*! babel-runtime/helpers/possibleConstructorReturn */ 521);
+	
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+	
+	var _inherits2 = __webpack_require__(/*! babel-runtime/helpers/inherits */ 546);
+	
+	var _inherits3 = _interopRequireDefault(_inherits2);
+	
+	var _react = __webpack_require__(/*! react */ 287);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	var _reactRouter = __webpack_require__(/*! react-router */ 444);
+	
+	var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ 576);
+	
+	var _firebase = __webpack_require__(/*! firebase */ 804);
+	
+	var _firebase2 = _interopRequireDefault(_firebase);
+	
+	var _reactRedux = __webpack_require__(/*! react-redux */ 553);
+	
+	var _redux = __webpack_require__(/*! redux */ 559);
+	
+	var _channels = __webpack_require__(/*! ../actions/channels */ 798);
+	
+	var actionCreators = _interopRequireWildcard(_channels);
+	
+	var _ChannelHandler = __webpack_require__(/*! ../utils/ChannelHandler */ 805);
+	
+	var _ChannelHandler2 = _interopRequireDefault(_ChannelHandler);
+	
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var ChatRoom = exports.ChatRoom = function (_Component) {
+	  (0, _inherits3.default)(ChatRoom, _Component);
+	
+	  function ChatRoom(props) {
+	    (0, _classCallCheck3.default)(this, ChatRoom);
+	
+	    var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(ChatRoom).call(this, props));
+	
+	    _this.state = {
+	      currentMessage: '',
+	      chatMessages: []
+	    };
+	
+	
+	    _this.chatHandler = new _ChannelHandler2.default(_this.props.username || 'Unknown', _this.props.params.channel, _this.handleNewMessages.bind(_this));
+	    return _this;
+	  }
+	
+	  (0, _createClass3.default)(ChatRoom, [{
+	    key: 'handleNewMessages',
+	    value: function handleNewMessages(message) {
+	      var messages = this.state.chatMessages.slice();
+	      messages.push(message);
+	      this.setState({ chatMessages: messages });
+	    }
+	  }, {
+	    key: 'componentWillMount',
+	    value: function componentWillMount() {
+	      this.chatHandler.sendAnnounceChannelMessage();
+	    }
+	  }, {
+	    key: 'validationState',
+	    value: function validationState() {
+	      var length = this.state.currentMessage.length;
+	      if (length > 10) return 'success';else if (length > 5) return 'warning';else if (length > 0) return 'error';
+	    }
+	  }, {
+	    key: 'handleChange',
+	    value: function handleChange() {
+	      this.setState({
+	        currentMessage: this.refs.input.getValue()
+	      });
+	    }
+	  }, {
+	    key: 'handleClick',
+	    value: function handleClick() {
+	      var messages = this.state.chatMessages.slice();
+	      messages.push({ event: 'message', username: this.props.username, message: this.state.currentMessage, channel: this.props.params.channel });
+	      this.setState({
+	        chatMessages: messages
+	      });
+	      this.chatHandler.sendMessage(this.state.currentMessage);
+	      this.setState({
+	        currentMessage: ''
+	      });
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var chatMessages = this.state.chatMessages;
+	
+	
+	      return _react2.default.createElement(
+	        'div',
+	        null,
+	        _react2.default.createElement(
+	          'h1',
+	          null,
+	          'Room: ',
+	          this.props.params.channel
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          null,
+	          _react2.default.createElement(_reactBootstrap.Input, {
+	            type: 'text',
+	            value: this.state.currentMessage,
+	            placeholder: 'Enter text',
+	            label: 'Working example with validation',
+	            help: 'Validation is based on string length.',
+	            bsStyle: this.validationState(),
+	            hasFeedback: true,
+	            ref: 'input',
+	            groupClassName: 'group-class',
+	            labelClassName: 'label-class',
+	            onChange: this.handleChange.bind(this) }),
+	          _react2.default.createElement(_reactBootstrap.ButtonInput, { type: 'submit', bsStyle: 'primary', onClick: this.handleClick.bind(this) })
+	        ),
+	        _react2.default.createElement(
+	          'div',
+	          null,
+	          _react2.default.createElement(
+	            'ul',
+	            null,
+	            chatMessages.map(function (message, index) {
+	              if (message.event === 'message') {
+	                return _react2.default.createElement(
+	                  'li',
+	                  { key: index },
+	                  _react2.default.createElement(
+	                    'strong',
+	                    null,
+	                    message.username,
+	                    ':'
+	                  ),
+	                  ' ',
+	                  message.message
+	                );
+	              }
+	              if (message.event === 'connected') {
+	                return _react2.default.createElement(
+	                  'li',
+	                  { key: index },
+	                  _react2.default.createElement(
+	                    'em',
+	                    null,
+	                    message.username
+	                  ),
+	                  ' joined'
+	                );
+	              }
+	            })
+	          )
+	        )
+	      );
+	    }
+	  }]);
+	  return ChatRoom;
+	}(_react.Component);
+	
+	var mapStateToProps = function mapStateToProps(state) {
+	  return {
+	    username: state.auth.username,
+	    channels: state.channels.channels,
+	    error: state.channels.error
+	  };
+	};
+	
+	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
+	  return {
+	    actions: (0, _redux.bindActionCreators)(actionCreators, dispatch),
+	    dispatch: dispatch
+	  };
+	};
+	
+	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(ChatRoom);
+
+/***/ },
+/* 804 */
 /*!****************************************!*\
   !*** ./~/firebase/lib/firebase-web.js ***!
   \****************************************/
@@ -54688,26 +55008,10 @@
 
 
 /***/ },
-/* 803 */
-/*!***************************************!*\
-  !*** ./client/src/constants/index.js ***!
-  \***************************************/
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	var GET_CHANNELS = exports.GET_CHANNELS = 'GET_CHANNELS';
-	var CREATE_CHANNEL = exports.CREATE_CHANNEL = 'CREATE_CHANNEL';
-	var GET_CHANNEL = exports.GET_CHANNEL = 'GET_CHANNEL';
-
-/***/ },
-/* 804 */
-/*!************************************************!*\
-  !*** ./client/src/components/Channels/List.js ***!
-  \************************************************/
+/* 805 */
+/*!********************************************!*\
+  !*** ./client/src/utils/ChannelHandler.js ***!
+  \********************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -54716,9 +55020,13 @@
 	  value: true
 	});
 	
-	var _getPrototypeOf = __webpack_require__(/*! babel-runtime/core-js/object/get-prototype-of */ 507);
+	var _stringify = __webpack_require__(/*! babel-runtime/core-js/json/stringify */ 806);
 	
-	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+	var _stringify2 = _interopRequireDefault(_stringify);
+	
+	var _assign = __webpack_require__(/*! babel-runtime/core-js/object/assign */ 585);
+	
+	var _assign2 = _interopRequireDefault(_assign);
 	
 	var _classCallCheck2 = __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ 519);
 	
@@ -54728,359 +55036,299 @@
 	
 	var _createClass3 = _interopRequireDefault(_createClass2);
 	
-	var _possibleConstructorReturn2 = __webpack_require__(/*! babel-runtime/helpers/possibleConstructorReturn */ 521);
-	
-	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-	
-	var _inherits2 = __webpack_require__(/*! babel-runtime/helpers/inherits */ 546);
-	
-	var _inherits3 = _interopRequireDefault(_inherits2);
-	
-	var _react = __webpack_require__(/*! react */ 287);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _reactRouter = __webpack_require__(/*! react-router */ 444);
-	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	var ChannelList = function (_Component) {
-	  (0, _inherits3.default)(ChannelList, _Component);
+	var ChatDelegate = function () {
 	
-	  function ChannelList(props) {
-	    (0, _classCallCheck3.default)(this, ChannelList);
-	    return (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(ChannelList).call(this, props));
+	  /**
+	   * Constructor for the Chat Delegate for a user and channel
+	   * @param username
+	   * @param channelId
+	   */
+	
+	  function ChatDelegate() {
+	    var username = arguments.length <= 0 || arguments[0] === undefined ? 'zer0kool' : arguments[0];
+	    var channelId = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+	    var messageBus = arguments[2];
+	    (0, _classCallCheck3.default)(this, ChatDelegate);
+	
+	    this.username = username;
+	    this.channelId = channelId;
+	    this.messageBus = messageBus;
+	
+	    this.database = new Firebase('https://blazing-torch-9743.firebaseio.com');
+	    this.signalChannel = this.database.child('messages').child(username);
+	    this.announceChannel = this.database.child('announce');
+	
+	    this.signalChannel.on('child_added', this.handleSignalChannelMessage.bind(this));
+	    this.announceChannel.on('child_added', this.handleAnnounceChannelMessage.bind(this));
+	
+	    return this;
 	  }
 	
-	  (0, _createClass3.default)(ChannelList, [{
-	    key: 'render',
-	    value: function render() {
-	      var channels = this.props.channels;
+	  /**
+	   * Sent when the user joins a channel
+	   */
 	
 	
-	      return _react2.default.createElement(
-	        'ul',
-	        null,
-	        channels.map(function (channel, index) {
-	          return _react2.default.createElement(
-	            'li',
-	            { key: channel.id },
-	            _react2.default.createElement(
-	              _reactRouter.Link,
-	              { to: '/channel/' + channel.id },
-	              channel.name
-	            )
-	          );
-	        })
-	      );
+	  (0, _createClass3.default)(ChatDelegate, [{
+	    key: 'sendAnnounceChannelMessage',
+	    value: function sendAnnounceChannelMessage() {
+	      var _this = this;
+	
+	      this.announceChannel.remove(function () {
+	        _this.announceChannel.push({
+	          sharedKey: _this.channelId,
+	          id: _this.username
+	        });
+	        console.log('Announced our sharedKey is ' + _this.channelId);
+	        console.log('Announced our ID is ' + _this.username);
+	      });
 	    }
-	  }]);
-	  return ChannelList;
-	}(_react.Component);
 	
-	ChannelList.propTypes = {
-	  channels: _react.PropTypes.array.isRequired
-	};
-	exports.default = ChannelList;
-
-/***/ },
-/* 805 */
-/*!*******************************************!*\
-  !*** ./client/src/containers/ChatRoom.js ***!
-  \*******************************************/
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
+	    /**
+	     * Handler for the signal channel
+	     * @param snapshot
+	     */
 	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.ChatRoom = undefined;
-	
-	var _getPrototypeOf = __webpack_require__(/*! babel-runtime/core-js/object/get-prototype-of */ 507);
-	
-	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
-	
-	var _classCallCheck2 = __webpack_require__(/*! babel-runtime/helpers/classCallCheck */ 519);
-	
-	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-	
-	var _possibleConstructorReturn2 = __webpack_require__(/*! babel-runtime/helpers/possibleConstructorReturn */ 521);
-	
-	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
-	
-	var _createClass2 = __webpack_require__(/*! babel-runtime/helpers/createClass */ 520);
-	
-	var _createClass3 = _interopRequireDefault(_createClass2);
-	
-	var _inherits2 = __webpack_require__(/*! babel-runtime/helpers/inherits */ 546);
-	
-	var _inherits3 = _interopRequireDefault(_inherits2);
-	
-	var _react = __webpack_require__(/*! react */ 287);
-	
-	var _react2 = _interopRequireDefault(_react);
-	
-	var _reactRouter = __webpack_require__(/*! react-router */ 444);
-	
-	var _reactBootstrap = __webpack_require__(/*! react-bootstrap */ 576);
-	
-	var _firebase = __webpack_require__(/*! firebase */ 802);
-	
-	var _firebase2 = _interopRequireDefault(_firebase);
-	
-	var _reactRedux = __webpack_require__(/*! react-redux */ 553);
-	
-	var _redux = __webpack_require__(/*! redux */ 559);
-	
-	var _channels = __webpack_require__(/*! ../actions/channels */ 798);
-	
-	var actionCreators = _interopRequireWildcard(_channels);
-	
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var ChatRoom = exports.ChatRoom = function (_Component) {
-	  (0, _inherits3.default)(ChatRoom, _Component);
-	  (0, _createClass3.default)(ChatRoom, [{
+	  }, {
 	    key: 'handleSignalChannelMessage',
 	    value: function handleSignalChannelMessage(snapshot) {
 	      var message = snapshot.val();
 	      var sender = message.sender;
 	      var type = message.type;
-	      console.log('Recieved a \'' + type + '\' signal from ' + sender);
-	      if (type == 'offer') this.handleOfferSignal(message);else if (type == 'answer') this.handleAnswerSignal(message);else if (type == 'candidate' && this.state.running) this.handleCandidateSignal.call(this, message);
-	    }
-	  }, {
-	    key: 'handleOfferSignal',
-	    value: function handleOfferSignal(message) {
-	      var _this2 = this;
 	
-	      this.setState({ running: true, remote: message.sender });
+	      console.log(type, message, sender);
 	
-	      this.initiateWebRTCState();
-	      this.startSendingCandidates();
-	      this.state.peerConnection.setRemoteDescription(new RTCSessionDescription(message));
-	      this.state.peerConnection.createAnswer(function (sessionDescription) {
-	        console.log('Sending answer to ' + message.sender);
-	        _this2.state.peerConnection.setLocalDescription(sessionDescription);
-	        _this2.sendSignalChannelMessage(sessionDescription.toJSON());
-	      });
+	      switch (type) {
+	        case 'offer':
+	          return this.handleOfferSignal.call(this, message);
+	        case 'answer':
+	          return this.handleAnswerSignal.call(this, message);
+	        case 'candidate':
+	          return this.isRunning && this.handleCandidateSignal.call(this, message);
+	        default:
+	          console.log('handleSignalChannelMessage', 'Unknown message type', type, message, sender);
+	      }
 	    }
-	  }, {
-	    key: 'handleAnswerSignal',
-	    value: function handleAnswerSignal(message) {
-	      this.state.peerConnection.setRemoteDescription(new RTCSessionDescription(message));
-	    }
-	  }, {
-	    key: 'handleCandidateSignal',
-	    value: function handleCandidateSignal(message) {
-	      var candidate = new RTCIceCandidate(message);
-	      this.state.peerConnection.addIceCandidate(candidate);
-	    }
-	  }, {
-	    key: 'handleDataChannel',
-	    value: function handleDataChannel(event) {
-	      event.channel.onmessage = this.handleDataChannelMessage.bind(this);
-	    }
-	  }, {
-	    key: 'handleDataChannelMessage',
-	    value: function handleDataChannelMessage(event) {
-	      console.log('Recieved Message: ' + event.data);
 	
-	      var messages = this.state.chatMessages.slice();
-	      messages.push(event.data);
-	      this.setState({ chatMessages: messages });
-	    }
-	  }, {
-	    key: 'handleDataChannelOpen',
-	    value: function handleDataChannelOpen() {
-	      console.log('Data channel created!');
-	      this.state.dataChannel.send('Hello! I am ' + this.randomId);
-	    }
+	    /**
+	     * Handler for the announcement channel
+	     * @param snapshot
+	     */
+	
 	  }, {
 	    key: 'handleAnnounceChannelMessage',
 	    value: function handleAnnounceChannelMessage(snapshot) {
 	      var message = snapshot.val();
-	      if (message.id != this.randomId && message.sharedKey == this.props.params.channel) {
-	        console.log('Discovered matching announcement from ' + message.id);
-	        this.state.remote = message.id;
+	      if (message.id != this.username && message.sharedKey === this.channelId) {
+	        console.log('handleAnnounceChannelMessage', 'Incoming Shared Announcement', message.id, message.sharedKey);
+	        this.lastRemoteClient = message.id;
 	        this.initiateWebRTCState.call(this);
 	        this.connectSessions.call(this);
 	      }
 	    }
 	  }, {
-	    key: 'startSendingCandidates',
-	    value: function startSendingCandidates() {
-	      this.state.peerConnection.oniceconnectionstatechange = this.handleICEConnectionStateChange.bind(this);
-	      this.state.peerConnection.onicecandidate = this.handleICECandidate.bind(this);
+	    key: 'createPeerConnectionAnswer',
+	    value: function createPeerConnectionAnswer(sessionDescription) {}
+	
+	    /**
+	     * Handler for an incoming offer signal
+	     * @param message
+	     */
+	
+	  }, {
+	    key: 'handleOfferSignal',
+	    value: function handleOfferSignal(message) {
+	      var _this2 = this;
+	
+	      this.isRunning = true;
+	
+	      this.initiateWebRTCState.call(this);
+	      this.startSendingCandidates.call(this);
+	      this.peerConnection.setRemoteDescription(new RTCSessionDescription(message));
+	
+	      this.peerConnection.createAnswer(function (sessionDescription) {
+	        console.log('Sending answer to ' + message.sender, message);
+	        _this2.peerConnection.setLocalDescription(sessionDescription);
+	        _this2.database.child('messages').child(message.sender).push(sessionDescription.toJSON());
+	      });
 	    }
+	  }, {
+	    key: 'handleAnswerSignal',
+	    value: function handleAnswerSignal(message) {
+	      this.peerConnection.setRemoteDescription(new RTCSessionDescription(message));
+	    }
+	  }, {
+	    key: 'handleCandidateSignal',
+	    value: function handleCandidateSignal(message) {
+	      console.log('Candidate Signal', message);
+	      var candidate = new RTCIceCandidate(message);
+	      this.peerConnection.addIceCandidate(candidate);
+	    }
+	
+	    /**
+	     * Hande ICE Server connection state change
+	     */
+	
 	  }, {
 	    key: 'handleICEConnectionStateChange',
 	    value: function handleICEConnectionStateChange() {
-	      if (this.state.peerConnection.iceConnectionState == 'disconnected') {
+	      if (this.peerConnection.iceConnectionState == 'disconnected') {
 	        console.log('Client disconnected!');
 	        this.sendAnnounceChannelMessage();
 	      }
 	    }
 	  }, {
-	    key: 'handleICECandidate',
-	    value: function handleICECandidate(event) {
-	      var candidate = event.candidate;
-	      if (candidate) {
-	        candidate = candidate.toJSON();
-	        candidate.type = 'candidate';
-	        console.log('Sending candidate to ' + this.state.remote);
-	        this.sendSignalChannelMessage(candidate);
-	      } else {
-	        console.log('All candidates sent');
-	      }
-	    }
-	  }, {
-	    key: 'sendSignalChannelMessage',
-	    value: function sendSignalChannelMessage(message) {
-	      message.sender = this.randomId;
-	      this.database.child('messages').child(this.state.remote).push(message);
-	    }
-	  }, {
-	    key: 'sendAnnounceChannelMessage',
-	    value: function sendAnnounceChannelMessage() {
+	    key: 'startSendingCandidates',
+	    value: function startSendingCandidates() {
 	      var _this3 = this;
 	
-	      this.announceChannel.remove(function () {
-	        _this3.announceChannel.push({
-	          sharedKey: _this3.props.params.channel,
-	          id: _this3.randomId
-	        });
-	        console.log('Announced our sharedKey is ' + _this3.props.params.channel);
-	        console.log('Announced our ID is ' + _this3.randomId);
-	      });
+	      this.peerConnection.oniceconnectionstatechange = function () {
+	        switch (_this3.peerConnection.iceConnectionState) {
+	          case 'connected':
+	            return console.log('Client Connected');
+	          case 'disconnected':
+	            console.log('Client Disconnected');
+	            return _this3.sendAnnounceChannelMessage();
+	          default:
+	            console.log('Unknown oniceconnectionstatechange', _this3.peerConnection.iceConnectionState, _this3.peerConnection);
+	        }
+	      };
+	
+	      this.peerConnection.onicecandidate = function (event) {
+	        var candidate = event.candidate;
+	        if (candidate) {
+	          candidate = candidate.toJSON();
+	          candidate.type = 'candidate';
+	          if (_this3.lastRemoteClient) {
+	            _this3.database.child('messages').child(_this3.lastRemoteClient).push((0, _assign2.default)({}, candidate, {
+	              sender: _this3.username
+	            }));
+	          }
+	        }
+	      };
+	
+	      this.peerConnection.onerror = function (error) {
+	        console.error('Peer Error', error);
+	      };
 	    }
+	  }, {
+	    key: 'handleOnPeerDataChannel',
+	    value: function handleOnPeerDataChannel(event) {
+	      var _this4 = this;
+	
+	      event.channel.onmessage = function (event) {
+	        console.log('Received Message: ' + event.data);
+	        _this4.messageBus(JSON.parse(event.data));
+	      };
+	
+	      event.channel.onerror = function (error) {
+	        console.error('Event Channel Error', error);
+	      };
+	    }
+	
+	    /**
+	     * Init a WebRTC peer connection and create a data channel for the channel id
+	     */
+	
 	  }, {
 	    key: 'initiateWebRTCState',
 	    value: function initiateWebRTCState() {
-	      var peerConnection = new webkitRTCPeerConnection(this.props.iceServers);
-	      peerConnection.ondatachannel = this.handleDataChannel.bind(this);
-	      var dataChannel = peerConnection.createDataChannel(this.props.params.channel);
-	      dataChannel.onmessage = this.handleDataChannelMessage.bind(this);
-	      dataChannel.onopen = this.handleDataChannelOpen.bind(this);
+	      var _this5 = this;
 	
-	      this.setState({
-	        peerConnection: peerConnection,
-	        dataChannel: dataChannel
-	      });
+	      this.peerConnection = new webkitRTCPeerConnection(this.stunConfig);
+	      this.peerConnection.ondatachannel = this.handleOnPeerDataChannel.bind(this);
+	
+	      this.dataChannel = this.peerConnection.createDataChannel(this.channelId);
+	
+	      this.dataChannel.onmessage = function (event) {
+	        console.log('Received Message: ' + event.data);
+	        _this5.messages.push(event.data);
+	      };
+	
+	      this.dataChannel.onopen = function (event) {
+	        console.log('Data channel created!', _this5.channelId);
+	        var readyState = _this5.dataChannel.readyState;
+	        if (readyState == 'open') {
+	          _this5.dataChannel.send((0, _stringify2.default)({
+	            event: 'connected',
+	            username: _this5.username,
+	            message: _this5.username$ + ' has connected',
+	            channel: _this5.channelId
+	          }));
+	        }
+	      };
+	
+	      this.dataChannel.onclose = function (event) {
+	        console.error('Data Channel has closed', _this5.channelId, event, _this5.dataChannel);
+	      };
+	
+	      this.dataChannel.onerror = function (error) {
+	        console.error('Data Channel error', error);
+	      };
 	    }
 	  }, {
 	    key: 'connectSessions',
 	    value: function connectSessions() {
-	      var _this4 = this;
+	      var _this6 = this;
 	
-	      this.setState({ running: true });
+	      this.isRunning = true;
 	      this.startSendingCandidates.call(this);
-	      this.state.peerConnection.createOffer(function (sessionDescription) {
-	        console.log('Sending offer to ' + _this4.state.remote);
-	        _this4.state.peerConnection.setLocalDescription(sessionDescription);
-	        _this4.sendSignalChannelMessage(sessionDescription.toJSON());
+	      this.peerConnection.createOffer(function (sessionDescription) {
+	        console.log('Sending offer to ' + _this6.lastRemoteClient);
+	        _this6.peerConnection.setLocalDescription(sessionDescription);
+	
+	        var message = sessionDescription.toJSON();
+	        message.sender = _this6.username;
+	        _this6.database.child('messages').child(_this6.lastRemoteClient).push(message);
 	      });
 	    }
-	  }]);
-	
-	  function ChatRoom(props) {
-	    (0, _classCallCheck3.default)(this, ChatRoom);
-	
-	    var _this = (0, _possibleConstructorReturn3.default)(this, (0, _getPrototypeOf2.default)(ChatRoom).call(this, props));
-	
-	    _this.state = {
-	      chatMessages: [],
-	      running: false,
-	      remote: null,
-	      peerConnection: null,
-	      dataChannel: null
-	    };
-	
-	
-	    var randomId = Math.random().toString().replace('.', '');
-	
-	    _this.randomId = randomId;
-	
-	    _this.database = new _firebase2.default('https://blazing-torch-9743.firebaseio.com');
-	    _this.announceChannel = _this.database.child('announce');
-	    _this.signalChannel = _this.database.child('messages').child(_this.randomId);
-	
-	    _this.signalChannel.on('child_added', _this.handleSignalChannelMessage.bind(_this));
-	    _this.announceChannel.on('child_added', _this.handleAnnounceChannelMessage.bind(_this));
-	    return _this;
-	  }
-	
-	  (0, _createClass3.default)(ChatRoom, [{
-	    key: 'componentDidMount',
-	    value: function componentDidMount() {
-	      this.sendAnnounceChannelMessage();
-	    }
 	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var chatMessages = this.state.chatMessages;
-	
-	
-	      return _react2.default.createElement(
-	        'div',
-	        null,
-	        _react2.default.createElement(
-	          'h1',
-	          null,
-	          'Room: ',
-	          this.props.params.channel
-	        ),
-	        _react2.default.createElement(
-	          'div',
-	          null,
-	          _react2.default.createElement(
-	            'ul',
-	            null,
-	            chatMessages.map(function (message, index) {
-	              return _react2.default.createElement(
-	                'li',
-	                { key: index },
-	                message
-	              );
-	            })
-	          )
-	        )
-	      );
+	    key: 'sendMessage',
+	    value: function sendMessage(message) {
+	      console.log(this, message);
+	      if (this.dataChannel.readyState === 'open') {
+	        this.dataChannel.send((0, _stringify2.default)({ event: 'message', username: this.username, message: message, channel: this.channelId }));
+	      } else {
+	        console.log('Data Channel Not Open', this.dataChannel.readyState, this.dataChannel);
+	      }
 	    }
 	  }]);
-	  return ChatRoom;
-	}(_react.Component);
+	  return ChatDelegate;
+	}();
 	
-	ChatRoom.defaultProps = {
-	  iceServers: {
-	    iceServers: [{
-	      url: 'stun:stun.l.google.com:19302'
-	    }]
-	  }
+	ChatDelegate.stunConfig = {
+	  iceServers: [{
+	    url: 'stun:stun.l.google.com:19302'
+	  }]
 	};
-	
-	
-	var mapStateToProps = function mapStateToProps(state) {
-	  return {
-	    channels: state.channels.channels,
-	    error: state.channels.error
-	  };
-	};
-	
-	var mapDispatchToProps = function mapDispatchToProps(dispatch) {
-	  return {
-	    actions: (0, _redux.bindActionCreators)(actionCreators, dispatch),
-	    dispatch: dispatch
-	  };
-	};
-	
-	exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(ChatRoom);
+	ChatDelegate.isRunning = false;
+	exports.default = ChatDelegate;
 
 /***/ },
 /* 806 */
+/*!***************************************************!*\
+  !*** ./~/babel-runtime/core-js/json/stringify.js ***!
+  \***************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = { "default": __webpack_require__(/*! core-js/library/fn/json/stringify */ 807), __esModule: true };
+
+/***/ },
+/* 807 */
+/*!************************************************!*\
+  !*** ./~/core-js/library/fn/json/stringify.js ***!
+  \************************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	var core = __webpack_require__(/*! ../../modules/$.core */ 515);
+	module.exports = function stringify(it){ // eslint-disable-line no-unused-vars
+	  return (core.JSON && core.JSON.stringify || JSON.stringify).apply(JSON, arguments);
+	};
+
+/***/ },
+/* 808 */
 /*!********************************************!*\
   !*** ./client/src/store/configureStore.js ***!
   \********************************************/
@@ -55093,7 +55341,7 @@
 	});
 	exports.configureStore = configureStore;
 	
-	var _reduxThunk = __webpack_require__(/*! redux-thunk */ 807);
+	var _reduxThunk = __webpack_require__(/*! redux-thunk */ 809);
 	
 	var _reduxThunk2 = _interopRequireDefault(_reduxThunk);
 	
@@ -55101,7 +55349,7 @@
 	
 	var _reactRouterRedux = __webpack_require__(/*! react-router-redux */ 501);
 	
-	var _reducers = __webpack_require__(/*! ./../reducers */ 808);
+	var _reducers = __webpack_require__(/*! ./../reducers */ 810);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -55135,7 +55383,7 @@
 	}
 
 /***/ },
-/* 807 */
+/* 809 */
 /*!************************************!*\
   !*** ./~/redux-thunk/lib/index.js ***!
   \************************************/
@@ -55161,7 +55409,7 @@
 	}
 
 /***/ },
-/* 808 */
+/* 810 */
 /*!**************************************!*\
   !*** ./client/src/reducers/index.js ***!
   \**************************************/
@@ -55178,19 +55426,24 @@
 	
 	var _reactRouterRedux = __webpack_require__(/*! react-router-redux */ 501);
 	
-	var _channels = __webpack_require__(/*! ./channels */ 809);
+	var _channels = __webpack_require__(/*! ./channels */ 811);
 	
 	var _channels2 = _interopRequireDefault(_channels);
+	
+	var _auth = __webpack_require__(/*! ./auth */ 814);
+	
+	var _auth2 = _interopRequireDefault(_auth);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var reducers = exports.reducers = (0, _redux.combineReducers)({
+	  auth: _auth2.default,
 	  channels: _channels2.default,
 	  routing: _reactRouterRedux.routerReducer
 	});
 
 /***/ },
-/* 809 */
+/* 811 */
 /*!*****************************************!*\
   !*** ./client/src/reducers/channels.js ***!
   \*****************************************/
@@ -55202,7 +55455,7 @@
 	  value: true
 	});
 	
-	var _defineProperty2 = __webpack_require__(/*! babel-runtime/helpers/defineProperty */ 810);
+	var _defineProperty2 = __webpack_require__(/*! babel-runtime/helpers/defineProperty */ 812);
 	
 	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 	
@@ -55212,9 +55465,9 @@
 	
 	var _createReducer;
 	
-	var _utils = __webpack_require__(/*! ../utils */ 811);
+	var _utils = __webpack_require__(/*! ../utils */ 813);
 	
-	var _constants = __webpack_require__(/*! ../constants */ 803);
+	var _constants = __webpack_require__(/*! ../constants */ 799);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -55237,7 +55490,7 @@
 	}), _createReducer));
 
 /***/ },
-/* 810 */
+/* 812 */
 /*!***************************************************!*\
   !*** ./~/babel-runtime/helpers/defineProperty.js ***!
   \***************************************************/
@@ -55269,7 +55522,7 @@
 	};
 
 /***/ },
-/* 811 */
+/* 813 */
 /*!***********************************!*\
   !*** ./client/src/utils/index.js ***!
   \***********************************/
@@ -55284,7 +55537,7 @@
 	exports.createReducer = createReducer;
 	exports.getSignalingServer = getSignalingServer;
 	
-	var _firebase = __webpack_require__(/*! firebase */ 802);
+	var _firebase = __webpack_require__(/*! firebase */ 804);
 	
 	var _firebase2 = _interopRequireDefault(_firebase);
 	
@@ -55329,6 +55582,47 @@
 	function getSignalingServer() {
 	  return new _firebase2.default('https://flickering-fire-1517.firebaseio.com/signalling');
 	}
+
+/***/ },
+/* 814 */
+/*!*************************************!*\
+  !*** ./client/src/reducers/auth.js ***!
+  \*************************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _defineProperty2 = __webpack_require__(/*! babel-runtime/helpers/defineProperty */ 812);
+	
+	var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+	
+	var _assign = __webpack_require__(/*! babel-runtime/core-js/object/assign */ 585);
+	
+	var _assign2 = _interopRequireDefault(_assign);
+	
+	var _createReducer;
+	
+	var _utils = __webpack_require__(/*! ../utils */ 813);
+	
+	var _constants = __webpack_require__(/*! ../constants */ 799);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var initialState = {
+	  username: ''
+	};
+	
+	exports.default = (0, _utils.createReducer)(initialState, (_createReducer = {}, (0, _defineProperty3.default)(_createReducer, _constants.SET_USERNAME, function (state, payload) {
+	  return (0, _assign2.default)({}, state, {
+	    username: payload
+	  });
+	}), (0, _defineProperty3.default)(_createReducer, _constants.GET_USERNAME, function (state) {
+	  return state.username;
+	}), _createReducer));
 
 /***/ }
 /******/ ]);

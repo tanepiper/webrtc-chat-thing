@@ -1,8 +1,9 @@
 import React, { Component, PropTypes } from 'react';
 import { Link } from 'react-router';
-import { Col } from 'react-bootstrap';
+import { Col, Input } from 'react-bootstrap';
 
 import Channels from './Channels';
+import Username from './Username';
 
 export default class Home extends Component {
 
@@ -14,6 +15,10 @@ export default class Home extends Component {
     return (
       <div>
         <h1>Chat App</h1>
+
+        <div className="row">
+          <Username />
+        </div>
 
         <div className="row">
           <Col md={6}>

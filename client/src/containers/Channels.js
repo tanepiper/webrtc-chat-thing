@@ -33,6 +33,7 @@ export default class Channels extends Component {
 }
 
 const mapStateToProps = (state) => ({
+  username: state.auth.username,
   channels: state.channels.channels,
   error: state.channels.error
 });
